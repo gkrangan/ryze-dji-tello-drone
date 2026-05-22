@@ -9,3 +9,7 @@ env/
 .env
 *.log
 .DS_Store
+
+# Drone recordings & snapshots
+recording_*.mp4
+snapshot_*.jpg

@@ -37,6 +37,7 @@ python tello_gui.py
 | Hover Test | Takeoff → hold height for a set duration → land |
 | Mission File | Load and run any YAML mission from the `missions/` folder |
 | Pattern Flight | Fly a square, circle, or figure-8 at a chosen size and speed |
+| Live Video | Live camera feed with telemetry HUD, face/color detection overlays, snapshot, and MP4 recording |
 
 **Controls:**
 - **Dry Run** checkbox — simulate the full sequence without connecting to the drone
@@ -167,5 +168,6 @@ Direction-based (simple):
 - [x] Pattern flight — square, circle, figure-8
 - [x] Computer vision triggers — face and color detection
 - [x] GUI — tabbed interface with live log and emergency land
+- [x] Live video feed — embedded camera stream with overlays, snapshot, and recording
 - [ ] Follow mode — track a detected object in real time
-- [ ] Telemetry display — live battery, height, speed in GUI
+- [ ] Concurrent mission + video — share a single drone connection

@@ -10,6 +10,7 @@ import tkinter as tk
 from tkinter import filedialog, scrolledtext, ttk
 
 from tello_mission import MissionExecutor
+from video_panel import VideoPanel
 
 
 class TelloGUI(tk.Tk):
@@ -20,9 +21,11 @@ class TelloGUI(tk.Tk):
 
         self._log_queue: queue.Queue = queue.Queue()
         self._executor: MissionExecutor | None = None
+        self._video_panel: VideoPanel | None = None
 
         self._build_ui()
         self._poll_log()
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     # ------------------------------------------------------------------
     # UI construction
@@ -47,6 +50,7 @@ class TelloGUI(tk.Tk):
         self._build_hover_tab()
         self._build_mission_tab()
         self._build_pattern_tab()
+        self._build_video_tab()
 
         # Control buttons
         btn_row = ttk.Frame(self)
@@ -118,6 +122,18 @@ class TelloGUI(tk.Tk):
             if isinstance(child, ttk.Label) and "Side" in str(child.cget("text")):
                 self._size_label_widget = child
                 break
+
+    def _build_video_tab(self):
+        frame = ttk.Frame(self._notebook, padding=14)
+        self._notebook.add(frame, text="  Live Video  ")
+        self._video_panel = VideoPanel(frame, log=self._log)
+
+    def _on_close(self):
+        if self._video_panel:
+            self._video_panel.shutdown()
+        if self._executor:
+            self._executor.stop()
+        self.destroy()
 
     def _on_pattern_change(self, _event=None):
         shape = self._pattern.get()
@@ -201,6 +217,9 @@ class TelloGUI(tk.Tk):
     # ------------------------------------------------------------------
 
     def _on_run(self):
+        if self._video_panel and self._video_panel.is_running() and not self._dry_run.get():
+            self._log("[Error] Stop the live video stream before running a mission.")
+            return
         mission = self._build_mission()
         if not mission:
             return
