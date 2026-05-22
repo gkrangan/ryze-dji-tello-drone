@@ -1,0 +1,10 @@
+name: Hover Test
+
+actions:
+  - type: takeoff
+    height_ft: 3
+
+  - type: hover
+    duration_secs: 10
+
+  - type: land

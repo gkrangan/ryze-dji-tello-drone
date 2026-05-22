@@ -1,12 +1,12 @@
 # Ryze DJI Tello Drone — Python Controller
 
-A Python application to autonomously control the Ryze DJI Tello drone, built incrementally from a simple hover controller up to more complex autonomous behaviors.
+A Python application to autonomously control the Ryze DJI Tello drone, built incrementally. All features are accessible through a GUI or driven directly from YAML mission files.
 
 ---
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.10+
 - Ryze DJI Tello drone
 - WiFi connection to the drone (connect your machine to the Tello's WiFi hotspot before running)
 
@@ -15,53 +15,157 @@ A Python application to autonomously control the Ryze DJI Tello drone, built inc
 ```bash
 git clone https://github.com/gkrangan/ryze-dji-tello-drone.git
 cd ryze-dji-tello-drone
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ---
 
-## Controllers
+## GUI Controller
 
-### `tello_hover.py` — Hover Controller
+The easiest way to fly. Covers all features in a single window.
 
-Takeoff → hover at a configurable height → land automatically or on command.
+```bash
+python tello_gui.py
+```
 
-**Flight sequence:**
-1. Connects to the drone and checks battery
-2. Takes off (drone lifts to ~80cm by default)
-3. Adjusts to the target height
-4. Hovers in place for the configured duration, actively sending zero-velocity commands every 100ms to minimize drift
-5. Lands automatically when time is up
+**Tabs:**
 
-**Usage:**
+| Tab | What it does |
+|-----|-------------|
+| Hover Test | Takeoff → hold height for a set duration → land |
+| Mission File | Load and run any YAML mission from the `missions/` folder |
+| Pattern Flight | Fly a square, circle, or figure-8 at a chosen size and speed |
+
+**Controls:**
+- **Dry Run** checkbox — simulate the full sequence without connecting to the drone
+- **▶ Run** — start the selected tab's flight
+- **■ Stop** — graceful stop and land mid-mission
+- **⬇ EMERGENCY LAND** — immediate land at any time, even outside a mission
+
+---
+
+## CLI — Hover Controller
+
+Standalone script for quick hover tests without the GUI.
 
 ```bash
 python tello_hover.py                        # defaults: 3ft, 10s
 python tello_hover.py --height 5 --time 30  # 5ft hover for 30s
-python tello_hover.py --height 2             # 2ft hover for 10s (default)
+python tello_hover.py --dry-run             # simulate without drone
 ```
 
 | Argument | Default | Description |
 |----------|---------|-------------|
 | `--height` | `3.0` | Hover height in feet |
 | `--time` | `10` | Hover duration in seconds |
+| `--dry-run` | off | Simulate flight without connecting |
 
-**Landing on demand:**
+Type `land` + Enter or press `Ctrl+C` to land immediately.
 
-| Method | Action |
-|--------|--------|
-| Type `land` + Enter | Graceful land at any time during hover |
-| `Ctrl+C` | Emergency land immediately |
+---
 
-**Notes:**
-- The Tello SDK enforces a 20cm minimum per move command. If the target height is within ±20cm of the post-takeoff position (~80cm), no height adjustment is issued — the drone hovers at its natural takeoff height.
-- Battery below 20% will show a warning before flight. The drone itself will auto-land if battery drops critically low mid-flight.
+## Mission Files
+
+Missions are YAML files that define a sequence of actions. Load them from the GUI's **Mission File** tab, or run them directly in code:
+
+```python
+from tello_mission import MissionExecutor
+mission = MissionExecutor.load_yaml("missions/square_pattern.yaml")
+MissionExecutor(dry_run=True).run(mission)
+```
+
+### Actions
+
+#### `takeoff`
+```yaml
+- type: takeoff
+  height_ft: 3        # optional — adjusts to this height after takeoff
+```
+
+#### `land`
+```yaml
+- type: land
+```
+
+#### `hover`
+```yaml
+- type: hover
+  height_ft: 4        # optional — adjust height before hovering
+  duration_secs: 10
+```
+
+#### `move`
+Direction-based (simple):
+```yaml
+- type: move
+  direction: forward  # forward, back, left, right, up, down
+  distance_cm: 100
+  speed: 30
+```
+3D coordinate (advanced):
+```yaml
+- type: move
+  x: 100    # forward (+) / backward (-)
+  y: 50     # left (+) / right (-)
+  z: 0      # up (+) / down (-)
+  speed: 30
+```
+
+#### `rotate`
+```yaml
+- type: rotate
+  direction: clockwise    # clockwise or counter-clockwise
+  degrees: 90
+```
+
+#### `pattern`
+```yaml
+- type: pattern
+  shape: square     # square, circle, figure-8
+  size_cm: 100      # side length (square) or radius (circle/figure-8)
+  speed: 30
+```
+
+#### `on_detect`
+```yaml
+- type: on_detect
+  target: face      # face or color
+  color: red        # red, green, blue, yellow (only if target: color)
+  on_found: hover   # hover (stop in place) or land
+  timeout_secs: 15
+```
+
+### Example missions
+
+| File | Description |
+|------|-------------|
+| `missions/hover_test.yaml` | Basic takeoff → hover → land |
+| `missions/square_pattern.yaml` | Fly a 1m × 1m square at 4ft |
+| `missions/circle_pattern.yaml` | Fly a circle with 80cm radius |
+| `missions/figure8_pattern.yaml` | Fly a figure-8 |
+| `missions/cv_face_detect.yaml` | Hover and scan for a face; hold in place when found |
+| `missions/cv_color_detect.yaml` | Hover and scan for a red object; land when found |
+
+---
+
+## Notes
+
+- The Tello SDK enforces a **20cm minimum** per single-axis move. If the target height is within ±20cm of the post-takeoff position (~80cm), no adjustment is issued.
+- Battery below 20% will show a warning before flight. The drone auto-lands when battery is critically low.
+- Circle and figure-8 patterns use continuous RC control. Radius accuracy depends on the drone's speed-to-yaw-rate ratio and may vary slightly in practice.
+- `on_detect` requires the drone's front camera stream (`streamon`). It is not available in dry-run mode.
 
 ---
 
 ## Roadmap
 
 - [x] Hover controller — takeoff, hold height, land on command
-- [ ] Waypoint navigation
-- [ ] Pattern flight (square, circle)
-- [ ] Computer vision triggers
+- [x] Mission file — YAML-driven sequential action execution
+- [x] Waypoint navigation — directional and 3D coordinate moves
+- [x] Pattern flight — square, circle, figure-8
+- [x] Computer vision triggers — face and color detection
+- [x] GUI — tabbed interface with live log and emergency land
+- [ ] Follow mode — track a detected object in real time
+- [ ] Telemetry display — live battery, height, speed in GUI

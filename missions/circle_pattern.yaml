@@ -1,0 +1,18 @@
+name: Circle Pattern
+
+actions:
+  - type: takeoff
+    height_ft: 4
+
+  - type: hover
+    duration_secs: 3
+
+  - type: pattern
+    shape: circle
+    size_cm: 80       # radius
+    speed: 25
+
+  - type: hover
+    duration_secs: 3
+
+  - type: land

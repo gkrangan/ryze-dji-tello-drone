@@ -1,0 +1,16 @@
+name: Face Detection Mission
+
+actions:
+  - type: takeoff
+    height_ft: 3
+
+  - type: hover
+    duration_secs: 2
+
+  # Scan for a face for up to 15 seconds; hover in place when found
+  - type: on_detect
+    target: face
+    on_found: hover     # options: hover, land
+    timeout_secs: 15
+
+  - type: land
