@@ -2,6 +2,8 @@
 
 A Python application to autonomously control the Ryze DJI Tello drone, built incrementally. All features are accessible through a GUI or driven directly from YAML mission files.
 
+**Status:** ✅ Hover controller, GUI, and Live Video feed verified on real hardware (macOS).
+
 ---
 
 ## Requirements
