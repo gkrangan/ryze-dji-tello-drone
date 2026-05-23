@@ -217,12 +217,15 @@ class TelloGUI(tk.Tk):
     # ------------------------------------------------------------------
 
     def _on_run(self):
+        self._log("[Control] Run clicked.")
         if self._video_panel and self._video_panel.is_running() and not self._dry_run.get():
             self._log("[Error] Stop the live video stream before running a mission.")
             return
         mission = self._build_mission()
         if not mission:
+            self._log("[Error] Could not build mission — check active tab and inputs.")
             return
+        self._log(f"[Mission] Built: {mission.get('name', 'Unnamed')} with {len(mission.get('actions', []))} actions.")
         self._executor = MissionExecutor(dry_run=self._dry_run.get(), log=self._log)
         self._set_running(True)
         threading.Thread(target=self._run_mission, args=(mission,), daemon=True).start()
