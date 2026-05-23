@@ -6,6 +6,21 @@ A Python application to autonomously control the Ryze DJI Tello drone, built inc
 
 ---
 
+## Hardware Demo
+
+The Ryze DJI Tello, straight out of the box:
+
+<p align="center">
+  <img src="images/drone_unboxing.jpg" width="48%" alt="Tello drone in original packaging" />
+  <img src="images/drone_side1.jpg" width="48%" alt="Tello drone — side view" />
+</p>
+
+**Drone in flight** (autonomous hover sequence): [`images/drone_flight.mp4`](images/drone_flight.mp4)
+
+**GUI controller demo** (Hover Test tab, real flight): [`images/gui_demo.mp4`](images/gui_demo.mp4)
+
+---
+
 ## Requirements
 
 - Python 3.10+

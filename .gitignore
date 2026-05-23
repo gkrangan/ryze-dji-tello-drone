@@ -13,3 +13,8 @@ env/
 # Drone recordings & snapshots
 recording_*.mp4
 snapshot_*.jpg
+
+# Raw media exports / working folder (use images/ for committed media)
+tello-media/
+*.HEIC
+*.MOV
