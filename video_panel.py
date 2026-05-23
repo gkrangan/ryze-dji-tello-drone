@@ -39,14 +39,20 @@ class VideoPanel:
     # ------------------------------------------------------------------
 
     def _build_ui(self):
-        # Video canvas (placeholder until streaming starts)
+        # Fixed-size container so the placeholder label doesn't blow out the window.
+        # (tk.Label width/height are characters/lines without an image — we want pixels.)
+        canvas_frame = tk.Frame(
+            self.parent, width=VIDEO_WIDTH, height=VIDEO_HEIGHT, bg="black",
+        )
+        canvas_frame.grid(row=0, column=0, columnspan=4, pady=(0, 8))
+        canvas_frame.grid_propagate(False)
+
         self._canvas = tk.Label(
-            self.parent, bg="black",
-            width=VIDEO_WIDTH, height=VIDEO_HEIGHT,
+            canvas_frame, bg="black",
             text="(stream off)", fg="#666666",
             font=("Helvetica", 11),
         )
-        self._canvas.grid(row=0, column=0, columnspan=4, pady=(0, 8))
+        self._canvas.place(relx=0.5, rely=0.5, anchor="center")
 
         # Controls row 1: stream / record / snapshot
         self._stream_btn = ttk.Button(self.parent, text="▶  Start Stream", width=16, command=self.toggle_stream)
